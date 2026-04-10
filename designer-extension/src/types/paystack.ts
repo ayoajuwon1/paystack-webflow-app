@@ -13,6 +13,7 @@ export type PaymentType =
   | "one_time"
   | "subscription"
   | "split"
+  | "ecommerce"
   | "payment_page";
 
 export interface PaystackConfig {

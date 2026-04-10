@@ -5,10 +5,12 @@ import { OneTimePayment } from "./OneTimePayment";
 import { SubscriptionSetup } from "./SubscriptionSetup";
 import { SplitPaymentSetup } from "./SplitPaymentSetup";
 import { PaymentPageLink } from "./PaymentPageLink";
+import { EcommerceSetup } from "./EcommerceSetup";
 import { SetupStatus } from "./SetupStatus";
 import { usePaystackConfig } from "../hooks/usePaystackConfig";
 import { useWebflow } from "../hooks/useWebflow";
 import { generateClientScript } from "../utils/script-generator";
+import { generateCartScript } from "../utils/cart-script-generator";
 import type { AppMode } from "../types/config";
 import type { PaymentType } from "../types/paystack";
 import { isValidAmount, toSmallestUnit, isTestKey } from "../utils/validators";
@@ -17,6 +19,7 @@ const PAYMENT_TYPE_TABS = [
   { id: "one_time", label: "One-time" },
   { id: "subscription", label: "Subscription" },
   { id: "split", label: "Split" },
+  { id: "ecommerce", label: "Shop" },
   { id: "payment_page", label: "Page Link" },
 ];
 
@@ -103,8 +106,11 @@ export function PaymentConfigurator({
     };
 
     try {
-      // Generate the checkout script
-      const script = generateClientScript({
+      // Generate the checkout script (cart script for ecommerce, standard for others)
+      const scriptGenerator = currentConfig.paymentType === "ecommerce"
+        ? generateCartScript
+        : generateClientScript;
+      const script = scriptGenerator({
         publicKey,
         config: currentConfig,
       });
@@ -166,7 +172,10 @@ export function PaymentConfigurator({
   };
 
   const handlePreview = () => {
-    const script = generateClientScript({
+    const previewScriptGen = currentConfig.paymentType === "ecommerce"
+      ? generateCartScript
+      : generateClientScript;
+    const script = previewScriptGen({
       publicKey,
       config: currentConfig,
     });
@@ -339,6 +348,15 @@ ${script}
         <SplitPaymentSetup
           config={currentConfig}
           mode={mode}
+          onUpdateField={updateField}
+          onToggleChannel={toggleChannel}
+          onUpdateCurrency={updateCurrency}
+        />
+      )}
+
+      {currentConfig.paymentType === "ecommerce" && (
+        <EcommerceSetup
+          config={currentConfig}
           onUpdateField={updateField}
           onToggleChannel={toggleChannel}
           onUpdateCurrency={updateCurrency}
