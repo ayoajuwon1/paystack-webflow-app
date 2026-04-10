@@ -47,17 +47,17 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     <div className="setup-wizard">
       <div className="setup-brand">
         <div className="setup-logo">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#0BA4DB" />
-            <path
-              d="M8 12h16v2H8v-2zm0 4h12v2H8v-2zm0 4h16v2H8v-2z"
-              fill="white"
-            />
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+            <rect width="56" height="56" rx="16" fill="#0BA4DB" />
+            <rect x="2" y="2" width="52" height="52" rx="14" fill="#0BA4DB" />
+            <path d="M16 22h24v3H16v-3z" fill="white" opacity="0.9" />
+            <path d="M16 28h18v3H16v-3z" fill="white" opacity="0.7" />
+            <path d="M16 34h24v3H16v-3z" fill="white" opacity="0.9" />
           </svg>
         </div>
         <h1>Paystack Payments</h1>
         <p className="setup-subtitle">
-          Accept payments on your Webflow site with Paystack
+          Accept payments on your Webflow site — cards, transfers, USSD, and more
         </p>
       </div>
 
