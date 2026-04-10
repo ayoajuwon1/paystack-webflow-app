@@ -1,0 +1,17 @@
+{
+  "name": "paystack-webflow-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Paystack payment integration for Webflow — open source Marketplace app",
+  "license": "MIT",
+  "workspaces": [
+    "designer-extension",
+    "backend"
+  ],
+  "scripts": {
+    "dev:extension": "npm run dev --workspace=designer-extension",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build:extension": "npm run build --workspace=designer-extension",
+    "build:backend": "npm run build --workspace=backend"
+  }
+}
