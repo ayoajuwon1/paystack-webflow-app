@@ -1,5 +1,4 @@
 import type { PaymentButtonConfig } from "../types/paystack";
-
 interface GenerateClientScriptOptions {
   publicKey: string;
   config: PaymentButtonConfig;

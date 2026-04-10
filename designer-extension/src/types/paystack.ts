@@ -42,7 +42,7 @@ export interface PaymentButtonConfig {
   id: string;
   paymentType: PaymentType;
   label: string;
-  amount: number; // in smallest currency unit (kobo for NGN)
+  amount: number; // major currency unit (e.g. 5000 = NGN 5,000)
   amountMode: AmountMode;
   dynamicSource: DynamicSourceConfig;
   currency: PaystackCurrency;

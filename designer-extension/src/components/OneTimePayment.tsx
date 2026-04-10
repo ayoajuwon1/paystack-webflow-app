@@ -3,7 +3,7 @@ import { Select } from "./ui/Select";
 import { DynamicPricingSetup } from "./DynamicPricingSetup";
 import type { PaymentButtonConfig, PaystackChannel, AmountMode } from "../types/paystack";
 import { CURRENCIES, ALL_CHANNELS } from "../types/paystack";
-import { formatAmountForDisplay } from "../utils/validators";
+import { formatAmountForDisplay, CURRENCY_SYMBOLS } from "../utils/validators";
 
 interface OneTimePaymentProps {
   config: PaymentButtonConfig;
@@ -21,6 +21,7 @@ export function OneTimePayment({
   onToggleChannel,
   onUpdateCurrency,
 }: OneTimePaymentProps) {
+  const symbol = CURRENCY_SYMBOLS[config.currency] || config.currency;
   const displayAmount = config.amount
     ? formatAmountForDisplay(config.amount, config.currency)
     : "";
@@ -59,16 +60,27 @@ export function OneTimePayment({
 
       {config.amountMode === "fixed" ? (
         <div className="field-row">
-          <Input
-            label="Amount (smallest unit)"
-            type="number"
-            value={config.amount || ""}
-            onChange={(e) =>
-              onUpdateField("amount", parseInt(e.target.value, 10) || 0)
-            }
-            placeholder="500000"
-            hint={displayAmount ? `= ${displayAmount}` : "e.g. 500000 kobo = NGN 5,000"}
-          />
+          <div className="input-group">
+            <label className="input-label" htmlFor="amount">Amount ({symbol})</label>
+            <div className="amount-input-wrap">
+              <span className="amount-prefix">{symbol}</span>
+              <input
+                id="amount"
+                className="input-field amount-input"
+                type="number"
+                value={config.amount || ""}
+                onChange={(e) =>
+                  onUpdateField("amount", parseFloat(e.target.value) || 0)
+                }
+                placeholder="5,000"
+                min="0"
+                step="any"
+              />
+            </div>
+            {displayAmount && (
+              <span className="input-hint amount-preview">{displayAmount}</span>
+            )}
+          </div>
           <Select
             label="Currency"
             value={config.currency}
