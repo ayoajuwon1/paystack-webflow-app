@@ -10,6 +10,8 @@ export function generateClientScript({
   config,
 }: GenerateClientScriptOptions): string {
   const channels = JSON.stringify(config.channels);
+  const isDynamic = config.amountMode === "dynamic";
+  const ds = config.dynamicSource;
 
   return `<script>
 (function() {
@@ -20,7 +22,15 @@ export function generateClientScript({
     successUrl: ${JSON.stringify(config.successUrl)},
     cancelUrl: ${JSON.stringify(config.cancelUrl)},
     emailMode: ${JSON.stringify(config.emailCollection)},
-    emailSelector: ${JSON.stringify(config.emailFieldSelector)}
+    emailSelector: ${JSON.stringify(config.emailFieldSelector)},
+    amountMode: ${JSON.stringify(config.amountMode)},
+    dynamic: {
+      amountSelector: ${JSON.stringify(ds.amountSelector)},
+      amountAttr: ${JSON.stringify(ds.amountAttribute)},
+      amountIsSmallest: ${ds.amountInSmallestUnit},
+      productSelector: ${JSON.stringify(ds.productNameSelector)},
+      currencySelector: ${JSON.stringify(ds.currencySelector)}
+    }
   };
 
   var script = document.createElement('script');
@@ -35,15 +45,85 @@ export function generateClientScript({
     }
   }
 
+  // Find an element near the button: first check within the same parent/card,
+  // then walk up ancestors looking for a match. This handles CMS collection
+  // items where the price and button are siblings inside a card wrapper.
+  function findNear(btn, selector) {
+    if (!selector) return null;
+    var parent = btn.parentElement;
+    for (var i = 0; i < 5 && parent; i++) {
+      var found = parent.querySelector(selector);
+      if (found) return found;
+      parent = parent.parentElement;
+    }
+    return document.querySelector(selector);
+  }
+
+  function readValue(el, attr) {
+    if (!el) return '';
+    if (attr === 'textContent') return (el.textContent || '').trim();
+    return (el.getAttribute(attr) || '').trim();
+  }
+
+  function parseAmount(raw, isSmallest) {
+    // Strip currency symbols, commas, spaces: "NGN 5,000.00" -> "5000.00"
+    var cleaned = raw.replace(/[^0-9.]/g, '');
+    var num = parseFloat(cleaned);
+    if (isNaN(num)) return 0;
+    return isSmallest ? Math.round(num) : Math.round(num * 100);
+  }
+
+  function resolveAmount(btn) {
+    // 1. Explicit data attribute always wins
+    var explicit = btn.getAttribute('data-paystack-amount');
+    if (explicit) return parseInt(explicit, 10);
+    // 2. Dynamic mode: find amount element near the button
+    ${isDynamic ? `
+    var amountEl = findNear(btn, CONFIG.dynamic.amountSelector);
+    if (amountEl) {
+      var raw = readValue(amountEl, CONFIG.dynamic.amountAttr);
+      if (raw) return parseAmount(raw, CONFIG.dynamic.amountIsSmallest);
+    }` : ""}
+    return 0;
+  }
+
+  function resolveProduct(btn) {
+    var explicit = btn.getAttribute('data-paystack-product');
+    if (explicit) return explicit;
+    ${isDynamic ? `
+    var el = findNear(btn, CONFIG.dynamic.productSelector);
+    if (el) return (el.textContent || '').trim();` : ""}
+    return '';
+  }
+
+  function resolveCurrency(btn) {
+    var explicit = btn.getAttribute('data-paystack-currency');
+    if (explicit) return explicit;
+    ${isDynamic && ds.currencySelector ? `
+    var el = findNear(btn, CONFIG.dynamic.currencySelector);
+    if (el) {
+      var val = (el.textContent || el.getAttribute('data-currency') || '').trim().toUpperCase();
+      if (['NGN','GHS','KES','ZAR','USD'].indexOf(val) > -1) return val;
+    }` : ""}
+    return CONFIG.defaultCurrency;
+  }
+
   function handleClick(e) {
     e.preventDefault();
     var btn = e.currentTarget;
-    var amount = parseInt(btn.getAttribute('data-paystack-amount') || '0', 10);
-    var currency = btn.getAttribute('data-paystack-currency') || CONFIG.defaultCurrency;
+
+    var amount = resolveAmount(btn);
+    var currency = resolveCurrency(btn);
+    var product = resolveProduct(btn);
     var plan = btn.getAttribute('data-paystack-plan') || '';
     var subaccount = btn.getAttribute('data-paystack-subaccount') || '';
     var splitCode = btn.getAttribute('data-paystack-split') || '';
     var emailField = btn.getAttribute('data-paystack-email-field') || CONFIG.emailSelector;
+
+    if (!amount && !plan) {
+      alert('Could not determine payment amount.');
+      return;
+    }
 
     var email = '';
     if (emailField) {
@@ -66,6 +146,7 @@ export function generateClientScript({
       amount: amount,
       currency: currency,
       channels: CONFIG.defaultChannels,
+      metadata: { custom_fields: [] },
       onSuccess: function(txn) {
         if (CONFIG.successUrl) {
           window.location.href = CONFIG.successUrl + (CONFIG.successUrl.indexOf('?') > -1 ? '&' : '?') + 'reference=' + txn.reference;
@@ -79,6 +160,14 @@ export function generateClientScript({
         }
       }
     };
+
+    if (product) {
+      txnConfig.metadata.custom_fields.push({
+        display_name: 'Product',
+        variable_name: 'product',
+        value: product
+      });
+    }
 
     if (plan) txnConfig.plan = plan;
     if (subaccount) txnConfig.subaccount = subaccount;

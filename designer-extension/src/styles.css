@@ -693,6 +693,53 @@ button, .channel-option, .radio-option, .mode-card, .tab {
 }
 
 /* ═══════════════════════════════════════════
+   Dynamic Pricing / CMS
+   ═══════════════════════════════════════════ */
+
+.pricing-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: 3px;
+}
+
+.pricing-toggle-btn {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border: none;
+  background: transparent;
+  border-radius: calc(var(--radius-md) - 2px);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s var(--ease);
+}
+.pricing-toggle-btn:hover:not(.pricing-toggle-active) { color: var(--text-secondary); }
+.pricing-toggle-active {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.dynamic-pricing-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cms-example {
+  margin-bottom: 12px;
+}
+.cms-example .code-block {
+  font-size: 11px;
+  margin-top: 6px;
+}
+
+/* ═══════════════════════════════════════════
    Payment Page Link
    ═══════════════════════════════════════════ */
 

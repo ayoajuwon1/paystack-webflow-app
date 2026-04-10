@@ -1,6 +1,7 @@
 import { Input } from "./ui/Input";
 import { Select } from "./ui/Select";
-import type { PaymentButtonConfig, PaystackChannel } from "../types/paystack";
+import { DynamicPricingSetup } from "./DynamicPricingSetup";
+import type { PaymentButtonConfig, PaystackChannel, AmountMode } from "../types/paystack";
 import { CURRENCIES, ALL_CHANNELS } from "../types/paystack";
 import { formatAmountForDisplay } from "../utils/validators";
 
@@ -33,26 +34,64 @@ export function OneTimePayment({
         placeholder="Pay Now"
       />
 
-      <div className="field-row">
-        <Input
-          label="Amount (smallest unit)"
-          type="number"
-          value={config.amount || ""}
-          onChange={(e) =>
-            onUpdateField("amount", parseInt(e.target.value, 10) || 0)
-          }
-          placeholder="500000"
-          hint={displayAmount ? `= ${displayAmount}` : "e.g. 500000 kobo = NGN 5,000"}
-        />
-        <Select
-          label="Currency"
-          value={config.currency}
-          onChange={(e) =>
-            onUpdateCurrency(e.target.value as PaymentButtonConfig["currency"])
-          }
-          options={CURRENCIES}
-        />
+      <div className="input-group">
+        <label className="input-label">Pricing Mode</label>
+        <div className="pricing-toggle">
+          <button
+            className={`pricing-toggle-btn ${config.amountMode === "fixed" ? "pricing-toggle-active" : ""}`}
+            onClick={() => onUpdateField("amountMode", "fixed" as AmountMode)}
+          >
+            Fixed Amount
+          </button>
+          <button
+            className={`pricing-toggle-btn ${config.amountMode === "dynamic" ? "pricing-toggle-active" : ""}`}
+            onClick={() => onUpdateField("amountMode", "dynamic" as AmountMode)}
+          >
+            Dynamic (CMS)
+          </button>
+        </div>
+        <span className="input-hint">
+          {config.amountMode === "fixed"
+            ? "Set a specific amount for this button"
+            : "Read the price from a nearby element on the page (works with CMS Collection Lists)"}
+        </span>
       </div>
+
+      {config.amountMode === "fixed" ? (
+        <div className="field-row">
+          <Input
+            label="Amount (smallest unit)"
+            type="number"
+            value={config.amount || ""}
+            onChange={(e) =>
+              onUpdateField("amount", parseInt(e.target.value, 10) || 0)
+            }
+            placeholder="500000"
+            hint={displayAmount ? `= ${displayAmount}` : "e.g. 500000 kobo = NGN 5,000"}
+          />
+          <Select
+            label="Currency"
+            value={config.currency}
+            onChange={(e) =>
+              onUpdateCurrency(e.target.value as PaymentButtonConfig["currency"])
+            }
+            options={CURRENCIES}
+          />
+        </div>
+      ) : (
+        <>
+          <Select
+            label="Default Currency"
+            value={config.currency}
+            onChange={(e) =>
+              onUpdateCurrency(e.target.value as PaymentButtonConfig["currency"])
+            }
+            options={CURRENCIES}
+            hint="Used when no currency is specified per item"
+          />
+          <DynamicPricingSetup config={config} onUpdateField={onUpdateField} />
+        </>
+      )}
 
       <div className="input-group">
         <label className="input-label">Payment Channels</label>

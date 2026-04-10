@@ -1,5 +1,12 @@
 {
   "name": "Paystack Payments",
   "description": "Accept payments on your Webflow site with Paystack — cards, bank transfer, USSD, mobile money, and more.",
-  "size": "default"
+  "size": "default",
+  "telemetry": {
+    "global": {
+      "allowTelemetry": true,
+      "lastPrompted": 1775833122815,
+      "version": "1.13.1"
+    }
+  }
 }

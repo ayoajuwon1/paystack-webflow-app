@@ -5,7 +5,7 @@ import type {
   PaystackCurrency,
   PaystackChannel,
 } from "../types/paystack";
-import { DEFAULT_CHANNELS } from "../types/paystack";
+import { DEFAULT_CHANNELS, DEFAULT_DYNAMIC_SOURCE } from "../types/paystack";
 
 const CONFIGS_KEY = "paystack-payment-configs";
 
@@ -33,6 +33,8 @@ export function createDefaultConfig(): PaymentButtonConfig {
     paymentType: "one_time",
     label: "Pay Now",
     amount: 0,
+    amountMode: "fixed" as const,
+    dynamicSource: { ...DEFAULT_DYNAMIC_SOURCE },
     currency: "NGN",
     channels: [...DEFAULT_CHANNELS],
     successUrl: "",

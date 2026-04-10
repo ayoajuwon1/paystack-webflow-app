@@ -20,11 +20,31 @@ export interface PaystackConfig {
   isTestMode: boolean;
 }
 
+export type AmountMode = "fixed" | "dynamic";
+
+export interface DynamicSourceConfig {
+  amountSelector: string;       // CSS selector to read price from (e.g. ".price", "[data-price]")
+  amountAttribute: string;      // "textContent" or a data attribute name (e.g. "data-amount")
+  amountInSmallestUnit: boolean; // true = value is already in kobo, false = value is in naira (will be x100)
+  productNameSelector: string;  // selector for product name (passed as metadata)
+  currencySelector: string;     // selector to read currency (optional, falls back to default)
+}
+
+export const DEFAULT_DYNAMIC_SOURCE: DynamicSourceConfig = {
+  amountSelector: "[data-paystack-price]",
+  amountAttribute: "textContent",
+  amountInSmallestUnit: false,
+  productNameSelector: "[data-paystack-product]",
+  currencySelector: "",
+};
+
 export interface PaymentButtonConfig {
   id: string;
   paymentType: PaymentType;
   label: string;
   amount: number; // in smallest currency unit (kobo for NGN)
+  amountMode: AmountMode;
+  dynamicSource: DynamicSourceConfig;
   currency: PaystackCurrency;
   channels: PaystackChannel[];
   successUrl: string;

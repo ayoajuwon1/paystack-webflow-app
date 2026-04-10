@@ -50,8 +50,20 @@ export function PaymentConfigurator({
 
   const handleApply = async () => {
     // Validate based on payment type
-    if (currentConfig.paymentType === "one_time" && !isValidAmount(currentConfig.amount)) {
+    if (
+      currentConfig.paymentType === "one_time" &&
+      currentConfig.amountMode === "fixed" &&
+      !isValidAmount(currentConfig.amount)
+    ) {
       notify("Please enter a valid amount", "Error");
+      return;
+    }
+    if (
+      currentConfig.paymentType === "one_time" &&
+      currentConfig.amountMode === "dynamic" &&
+      !currentConfig.dynamicSource.amountSelector
+    ) {
+      notify("Please enter a price element selector", "Error");
       return;
     }
     if (currentConfig.paymentType === "subscription" && !currentConfig.planCode) {
